@@ -1,0 +1,16 @@
+---
+- name: fetch latest release manifest from github
+  uri:
+    url: https://api.github.com/repos/mikefarah/yq/releases/latest
+    return_content: true
+  register: manifest_result
+
+- name: download and install yq
+  become: true
+  vars:
+    jmes_query: "assets[?name=='yq_linux_amd64'] | [0]"
+    binary_asset: "{{ manifest_result.json | json_query(jmes_query) }}"
+  get_url:
+    url: "{{ binary_asset.browser_download_url }}"
+    dest: /usr/local/bin/yq
+    mode: 0555
